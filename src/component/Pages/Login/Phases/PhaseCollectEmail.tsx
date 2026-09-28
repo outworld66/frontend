@@ -52,7 +52,9 @@ interface PhaseCollectEmailProps {
 const PhaseCollectEmail = ({ email, setEmail, control, onOAuthPasskeyLogin }: PhaseCollectEmailProps) => {
   const { t } = useTranslation();
   const query = useQuery();
-  const { register_enabled, authn, sso_enabled } = useAppSelector((state) => state.siteConfig.login.config);
+  const { register_enabled, userpass_enabled, authn, sso_enabled } = useAppSelector(
+    (state) => state.siteConfig.login.config,
+  );
   const tos = useAppSelector((state) => state.siteConfig.login.config.tos_url);
   const privacyPolicy = useAppSelector((state) => state.siteConfig.login.config.privacy_policy_url);
 
@@ -66,25 +68,29 @@ const PhaseCollectEmail = ({ email, setEmail, control, onOAuthPasskeyLogin }: Ph
 
   return (
     <>
-      <FormControl variant="standard" margin="normal" required fullWidth>
-        <OutlineIconTextField
-          label={t("login.email")}
-          variant={"outlined"}
-          inputProps={{
-            id: "email",
-            type: "email",
-            name: "email",
-            required: "true",
-          }}
-          onChange={(e) => setEmail(e.target.value)}
-          icon={<MailOutlined />}
-          autoComplete={"username webauthn"}
-          value={email}
-          autoFocus
-        />
-      </FormControl>
-      {control?.submit}
-      {control?.back}
+      {userpass_enabled && (
+        <>
+          <FormControl variant="standard" margin="normal" required fullWidth>
+            <OutlineIconTextField
+              label={t("login.email")}
+              variant={"outlined"}
+              inputProps={{
+                id: "email",
+                type: "email",
+                name: "email",
+                required: "true",
+              }}
+              onChange={(e) => setEmail(e.target.value)}
+              icon={<MailOutlined />}
+              autoComplete={"username webauthn"}
+              value={email}
+              autoFocus
+            />
+          </FormControl>
+          {control?.submit}
+          {control?.back}
+        </>
+      )}
       {sso_enabled && (
         <Button
           sx={{ mt: 2 }}
@@ -98,7 +104,7 @@ const PhaseCollectEmail = ({ email, setEmail, control, onOAuthPasskeyLogin }: Ph
           Login with Pocket ID
         </Button>
       )}
-      {register_enabled && (
+      {userpass_enabled && register_enabled && (
         <Box sx={{ mt: 2, typography: "body2", textAlign: "center" }}>
           <Trans
             ns={"application"}
