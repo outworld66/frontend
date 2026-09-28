@@ -12,8 +12,10 @@ import LoadingSnackbar from "./component/Common/Snackbar/LoadingSnackbar.tsx";
 import { ServiceWorkerUpdateAction } from "./component/Common/Snackbar/snackbar.tsx";
 import GlobalDialogs from "./component/Dialogs/GlobalDialogs.tsx";
 import { GrowDialogTransition } from "./component/FileManager/Search/SearchPopup.tsx";
+import { getUserInfo } from "./api/api.ts";
 import Warning from "./component/Icons/Warning.tsx";
-import { useAppSelector } from "./redux/hooks.ts";
+import { useAppDispatch, useAppSelector } from "./redux/hooks.ts";
+import SessionManager from "./session";
 import { changeThemeColor } from "./util";
 
 export const applyThemeWithOverrides = (themeConfig: ThemeOptions): ThemeOptions => {
@@ -285,6 +287,7 @@ const StyledMaterialDesignContent = styled(MaterialDesignContent)(({ theme }) =>
 }));
 
 const AppContent = () => {
+  const dispatch = useAppDispatch();
   const title = useAppSelector((state) => state.siteConfig.basic.config.title);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -322,6 +325,24 @@ const AppContent = () => {
     const loader = document.getElementById("app-loader");
     if (loader) loader.style.display = "none";
   }, []);
+
+  useEffect(() => {
+    let requestInFlight = false;
+    const checkSession = () => {
+      const session = SessionManager.currentLoginOrNull();
+      if (!session || requestInFlight) return;
+
+      requestInFlight = true;
+      dispatch(getUserInfo(session.user.id))
+        .catch(() => undefined)
+        .finally(() => {
+          requestInFlight = false;
+        });
+    };
+
+    const timer = window.setInterval(checkSession, 5000);
+    return () => window.clearInterval(timer);
+  }, [dispatch]);
 
   return (
     <>
