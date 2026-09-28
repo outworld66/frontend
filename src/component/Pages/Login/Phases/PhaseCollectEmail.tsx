@@ -1,4 +1,4 @@
-import { Box, Divider, FormControl, Link, Stack } from "@mui/material";
+import { Box, Button, Divider, FormControl, Link, Stack } from "@mui/material";
 import { useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link as RouterLink } from "react-router-dom";
@@ -52,11 +52,11 @@ interface PhaseCollectEmailProps {
 const PhaseCollectEmail = ({ email, setEmail, control, onOAuthPasskeyLogin }: PhaseCollectEmailProps) => {
   const { t } = useTranslation();
   const query = useQuery();
-  const { register_enabled, authn } = useAppSelector((state) => state.siteConfig.login.config);
+  const { register_enabled, authn, sso_enabled } = useAppSelector((state) => state.siteConfig.login.config);
   const tos = useAppSelector((state) => state.siteConfig.login.config.tos_url);
   const privacyPolicy = useAppSelector((state) => state.siteConfig.login.config.privacy_policy_url);
 
-  const showFooter = tos || privacyPolicy || authn;
+  const showFooter = tos || privacyPolicy || authn || sso_enabled;
 
   useEffect(() => {
     if (!!query.get("email")) {
@@ -85,6 +85,19 @@ const PhaseCollectEmail = ({ email, setEmail, control, onOAuthPasskeyLogin }: Ph
       </FormControl>
       {control?.submit}
       {control?.back}
+      {sso_enabled && (
+        <Button
+          sx={{ mt: 2 }}
+          fullWidth
+          variant="outlined"
+          onClick={() => {
+            const redirect = query.get("redirect") ?? "/home";
+            window.location.assign(`/api/v4/session/oidc/login?redirect=${encodeURIComponent(redirect)}`);
+          }}
+        >
+          Login with Pocket ID
+        </Button>
+      )}
       {register_enabled && (
         <Box sx={{ mt: 2, typography: "body2", textAlign: "center" }}>
           <Trans

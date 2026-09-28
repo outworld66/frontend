@@ -32,6 +32,7 @@ export interface SiteConfig {
   logo_light?: string;
   tos_url?: string;
   privacy_policy_url?: string;
+  sso_enabled?: boolean;
   icons?: string;
   emoji_preset?: string;
   map_provider?: string;

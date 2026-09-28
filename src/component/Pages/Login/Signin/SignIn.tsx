@@ -101,6 +101,22 @@ const EmailLogin = ({ oauthConsent }: SignInProps) => {
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
 
+  useEffect(() => {
+    const ticket = query.get("oidc_ticket");
+    if (!ticket) return;
+    setLoading(true);
+    fetch(`/api/v4/session/oidc/exchange?ticket=${encodeURIComponent(ticket)}`)
+      .then((response) => response.json())
+      .then((response) => {
+        if (response.code !== 0) throw new Error(response.msg || "OIDC login failed");
+        dispatch(refreshUserSession(response.data, query.get("redirect")));
+      })
+      .catch((error) => {
+        setLoading(false);
+        setOauthError(error.message);
+      });
+  }, []);
+
   // Load OAuth app registration
   const loadAppRegistration = useCallback(async () => {
     if (!oauthConsent?.clientId) {
